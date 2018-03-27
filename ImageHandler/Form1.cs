@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -34,13 +35,14 @@ namespace ImageHandler
             List<Color> RowColors = new List<Color>();
             int[] result = new int[2000];
             int n = -1;
-            for (int i = 0; i < image.Width; i+=20)
+            for (int i = 0; i < image.Width; i += 20)
             {
                 n++;
-                for (int j = 0; j < image.Height; j+=20)
+                for (int j = 0; j < image.Height; j += 20)
                 {
                     var color = bitmap.GetPixel(i, j);
-                    if (!RowColors.Contains(color, new ColorEquality())) {
+                    if (!RowColors.Contains(color, new ColorEquality()))
+                    {
                         RowColors.Add(color);
                         result[n] += 1;
                     }
@@ -48,6 +50,9 @@ namespace ImageHandler
                 }
                 RowColors.Clear();
             }
+            var txt = string.Join("", result).Trim('0', ' ');
+
+            Console.WriteLine(HashMd5(txt));
 
         }
         //public bool find( Color color, int r, int g, int b)
@@ -71,16 +76,24 @@ namespace ImageHandler
 
         public class ColorEquality : IEqualityComparer<Color>
         {
-            
+
             public bool Equals(Color x, Color y)
             {
-                return x.ToArgb()- 1000 < y.ToArgb()  && x.ToArgb() + 1000 > y.ToArgb();
+                return x.ToArgb() - 1000 < y.ToArgb() && x.ToArgb() + 1000 > y.ToArgb();
             }
 
             public int GetHashCode(Color obj)
             {
                 throw new NotImplementedException();
             }
+        }
+
+        public string HashMd5(string txt)
+        {
+            byte[] byt = System.Text.Encoding.Default.GetBytes(txt);
+            MD5 mD5 = new MD5CryptoServiceProvider();
+            var targetByt = mD5.ComputeHash(byt);
+            return BitConverter.ToString(targetByt).Replace("-", "");
         }
     }
 }
